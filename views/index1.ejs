@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Hyperlink Example</title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script
+            src="https://cdn.jsdelivr.net/gh/ethereum/web3.js@1.0.0-beta.36/dist/web3.min.js"
+            integrity="sha256-nWBTbvxhJgjslRyuAKJHK+XcZPlCnmIAAMixz6EefVk="
+            crossorigin="anonymous"
+        ></script>
+        <style>
+            table {
+                font-family: arial, sans-serif;
+                border-collapse: collapse;
+                width: 100%;
+                font-size: 14px;
+            }
+
+            td,
+            th {
+                border: 1px solid #dddddd;
+                text-align: left;
+                padding: 8px;
+            }
+
+            tr:nth-child(even) {
+                background-color: #dddddd;
+            }
+        </style>
+    </head>
+
+    <body>
+        <h3>
+            Task 1: Build a small webApp (preferred to use python and/or NodeJS)
+            to list Burn/mint transactions from the TBC token in a simple html
+            page?
+        </h3>
+        <h3>Answer:</h3>
+        <table id="table">
+            <!-- <div id="stud"></div> -->
+        </table>
+        <script>
+            var web3;
+            window.addEventListener('load', function () {
+                if (typeof web3 !== 'undefined') {
+                    console.log(
+                        'Web3 Detected! ' +
+                            web3.currentProvider.constructor.name
+                    );
+                    window.web3 = new Web3(web3.currentProvider);
+                } else {
+                    console.log('No Web3 Detected... using HTTP Provider');
+                    window.web3 = new Web3(
+                        new Web3.providers.HttpProvider(
+                            'https://mainnet.infura.io/<APIKEY>'
+                        )
+                    );
+                }
+            });
+
+            function timeSince(date) {
+                var seconds = Math.floor(new Date().getTime() / 1000 - date),
+                    interval = Math.floor(seconds / 31536000);
+
+                if (interval > 1) return interval + 'y';
+
+                interval = Math.floor(seconds / 2592000);
+                if (interval > 1) return interval + 'm';
+
+                interval = Math.floor(seconds / 86400);
+                var interval1 = Math.floor((seconds % 86400) / 3600);
+
+                if (interval >= 1)
+                    return interval + 'days' + ' ' + interval1 + 'hrs ago';
+
+                interval = Math.floor(seconds / 3600);
+                if (interval >= 1) return interval + 'h';
+
+                interval = Math.floor(seconds / 60);
+                if (interval > 1) return interval + 'm ';
+
+                return Math.floor(seconds) + 's';
+            }
+
+            function web3Convertor(data) {
+                var info = web3.eth.abi.decodeLog(
+                    [
+                        {
+                            type: 'address',
+                            name: 'from',
+                            indexed: true
+                        },
+                        {
+                            type: 'address',
+                            name: 'to',
+                            indexed: true
+                        },
+                        {
+                            type: 'uint256',
+                            name: 'value'
+                        }
+                    ],
+                    data.data,
+                    [
+                        // "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+                        data.topics[1],
+                        data.topics[2]
+                    ]
+                );
+                return info;
+            }
+
+            function apiCall() {
+                return $.get('/task2-api');
+            }
+            async function main() {
+                const test = await apiCall();
+
+                var listData = JSON.parse(test);
+                listData = listData.result;
+
+                var listContainer = document.createElement('div');
+                listContainer.id = 'stud'; // Get the first <h1> element in the document
+                var mainContainer = document.getElementById('table');
+                mainContainer.appendChild(listContainer);
+                var listHead = document.createElement('th');
+                var listHead1 = document.createElement('th');
+                var listHead2 = document.createElement('th');
+                var listHead3 = document.createElement('th');
+                var listHead4 = document.createElement('th');
+                var listHead5 = document.createElement('th');
+                var listHead6 = document.createElement('th');
+                var listHead7 = document.createElement('th');
+                var listHead8 = document.createElement('th');
+
+                listHead.innerHTML = '<tr>Tnx Hash<tr/>';
+                listHead1.innerHTML = '<tr>Method<tr/>';
+                listHead2.innerHTML = '<tr>Age<tr/>';
+                listHead3.innerHTML = '<tr>From<tr/>';
+                listHead4.innerHTML = '<tr>To<tr/>';
+                listHead5.innerHTML = '<tr>Quantity<tr/>';
+                // listHead7.innerHTML = '<tr>24 hr % <tr/>';
+                // listHead8.innerHTML = '<tr>Volume<tr/>';
+
+                listContainer.appendChild(listHead);
+                listContainer.appendChild(listHead1);
+                listContainer.appendChild(listHead2);
+                listContainer.appendChild(listHead3);
+                listContainer.appendChild(listHead4);
+                listContainer.appendChild(listHead5);
+                // listContainer.appendChild(listHead7);
+                // listContainer.appendChild(listHead8);
+
+                var numberOfListItems = listData.length;
+
+                listData.reverse().map(async (e) => {
+                    // create a <li> for each one.
+                    let method_value;
+                    if (
+                        e.topics[1] ===
+                        '0x0000000000000000000000000000000000000000000000000000000000000000'
+                    ) {
+                        method_value = 'mint';
+                    } else if (
+                        e.topics[2] ===
+                        '0x0000000000000000000000000000000000000000000000000000000000000000'
+                    ) {
+                        method_value = 'burn';
+                    } else {
+                        method_value = 'Transfer';
+                    }
+
+                    if (
+                        e.topics.includes(
+                            '0x0000000000000000000000000000000000000000000000000000000000000000'
+                        )
+                    ) {
+                        var times = web3.utils.hexToNumber(e.timeStamp);
+                        var timestamp = new Date().getTime();
+
+                        var diffs = await timeSince(times);
+                        var amt = await web3Convertor(e);
+
+                        var listRow = document.createElement('tr');
+
+                        var listItem = document.createElement('td');
+
+                        var listItem1 = document.createElement('td');
+
+                        var listItem2 = document.createElement('td');
+                        var listItem3 = document.createElement('td');
+                        var listItem4 = document.createElement('td');
+                        var listItem5 = document.createElement('td');
+
+                        // listItem6.bgColor = 'green';
+
+                        // var listItem7 = document.createElement('td');
+
+                        // var listItem8 = document.createElement('td');
+
+                        // add the images and the html you want before and after
+                        listItem.innerHTML =
+                            '<td>' + e.transactionHash + '<td/>';
+
+                        listItem1.innerHTML = '<td>' + method_value + '<td/>';
+                        if (method_value === 'mint') {
+                            listItem1.bgColor = 'green';
+                        } else {
+                            listItem1.bgColor = 'red';
+                        }
+                        listItem2.innerHTML = '<td>' + diffs + '<td/>';
+                        listItem3.innerHTML = '<td>' + amt.from + '<td/>';
+                        listItem4.innerHTML = '<td>' + amt.to + '<td/>';
+                        listItem5.innerHTML =
+                            '<td>' +
+                            Math.round(amt.value / 1000000000000000000) +
+                            '  TBC';
+                        ('<td/>');
+
+                        // add listItem to the listElement
+                        listContainer.appendChild(listRow);
+
+                        listRow.appendChild(listItem);
+                        listRow.appendChild(listItem1);
+                        listRow.appendChild(listItem2);
+                        listRow.appendChild(listItem3);
+                        listRow.appendChild(listItem4);
+                        listRow.appendChild(listItem5);
+                    }
+
+                    // listRow.appendChild(listItem7);
+                    // listRow.appendChild(listItem8);
+                });
+            }
+
+            main();
+        </script>
+    </body>
+</html>

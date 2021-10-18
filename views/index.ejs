@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+        <title><%= title %></title>
+        <link rel="stylesheet" href="/stylesheets/style.css" />
+        <style>
+            table {
+                font-family: arial, sans-serif;
+                border-collapse: collapse;
+                width: 100%;
+            }
+
+            td,
+            th {
+                border: 1px solid #dddddd;
+                text-align: left;
+                padding: 8px;
+            }
+
+            tr:nth-child(even) {
+                background-color: #dddddd;
+            }
+        </style>
+    </head>
+    <body>
+        <h1><%= title %></h1>
+        <h3>
+            Task 2: Build a small webApp (preferred to use python and/or NodeJS)
+            to display top 100 tokens with 24 hour volume change in a simple
+            html page using CoinMarketCap API?
+        </h3>
+        <h3>Answer:</h3>
+        <div id="some_div"></div>
+        <a
+            href="https://coinmarketcap.com/api/documentation/v1/#operation/getV1CryptocurrencyListingsHistorical"
+            >Visit CoinMarketCap API refresh details</a
+        >
+        <br />
+        <table id="table">
+            <!-- <div id="stud"></div> -->
+        </table>
+
+        <div id="mydiv" data-test="<%= data %>"></div>
+        <script>
+            var timeLeft = 60;
+            var timerId;
+            var elem = document.getElementById('some_div');
+
+            function countdown() {
+                if (timeLeft == -1) {
+                    clearTimeout(timerId);
+                    // doSomething();
+                    timeLeft = 60;
+                } else {
+                    elem.innerHTML =
+                        'NEXT API CALL IN :  ' +
+                        timeLeft +
+                        '   seconds remaining (Here Im using trail version of coinmarkcap api, so the api refresh rate they allowed is 60 seconds)';
+                    timeLeft--;
+                }
+            }
+            function apiCall() {
+                timerId = setInterval(countdown, 1000);
+                return $.get('/task1-api');
+            }
+            setInterval(async function () {
+                var string = await apiCall();
+                console.log(JSON.parse(string));
+                var listData = JSON.parse(string);
+                var numberOfListItems = listData.length;
+
+                listData.map(async (e) => {
+                    console.log('meek', e);
+                    var myobj = await document.getElementById(e.symbol);
+                    myobj.innerText = e.quote.USD.percent_change_1h;
+                    if (myobj.innerText.startsWith('-')) {
+                        myobj.bgColor = 'red';
+                    } else {
+                        myobj.bgColor = 'green';
+                    }
+                    var myobj = await document.getElementById(e.name);
+                    myobj.innerText = e.quote.USD.percent_change_24h;
+                    if (myobj.innerText.startsWith('-')) {
+                        myobj.bgColor = 'red';
+                    } else {
+                        myobj.bgColor = 'green';
+                    }
+                    var myobj = await document.getElementById(e.cmc_rank);
+                    myobj.innerText = e.quote.USD.volume_change_24h;
+                    if (myobj.innerText.startsWith('-')) {
+                        myobj.bgColor = 'red';
+                    } else {
+                        myobj.bgColor = 'green';
+                    }
+                });
+            }, 60000);
+
+            main();
+
+            async function main() {
+                var test;
+                test = await apiCall();
+                var listData = JSON.parse(test);
+                console.log(listData[0].quote.USD.percent_change_1h);
+
+                var listContainer = document.createElement('div');
+                listContainer.id = 'stud'; // Get the first <h1> element in the document
+                var mainContainer = document.getElementById('table');
+                mainContainer.appendChild(listContainer);
+                var listHead = document.createElement('th');
+                var listHead1 = document.createElement('th');
+                var listHead2 = document.createElement('th');
+                var listHead3 = document.createElement('th');
+                var listHead4 = document.createElement('th');
+                var listHead5 = document.createElement('th');
+                var listHead6 = document.createElement('th');
+                var listHead7 = document.createElement('th');
+                var listHead8 = document.createElement('th');
+
+                listHead.innerHTML = '<tr>Rank<tr/>';
+                listHead1.innerHTML = '<tr>Name<tr/>';
+                listHead2.innerHTML = '<tr>Symbol<tr/>';
+                listHead3.innerHTML = '<tr>Circulating Supply<tr/>';
+                listHead4.innerHTML = '<tr>Max Supply<tr/>';
+                listHead5.innerHTML = '<tr>Total Supply<tr/>';
+                listHead6.innerHTML = '<tr>1hr %<tr/>';
+                listHead7.innerHTML = '<tr>24 hr % <tr/>';
+                listHead8.innerHTML = '<tr>24 hr Volume(%)<tr/>';
+
+                listContainer.appendChild(listHead);
+                listContainer.appendChild(listHead1);
+                listContainer.appendChild(listHead2);
+                listContainer.appendChild(listHead3);
+                listContainer.appendChild(listHead4);
+                listContainer.appendChild(listHead5);
+                listContainer.appendChild(listHead6);
+                listContainer.appendChild(listHead7);
+                listContainer.appendChild(listHead8);
+
+                var numberOfListItems = listData.length;
+
+                for (var i = 0; i < numberOfListItems; ++i) {
+                    // create a <li> for each one.
+                    var listRow = document.createElement('tr');
+
+                    var listItem = document.createElement('td');
+
+                    var listItem1 = document.createElement('td');
+
+                    var listItem2 = document.createElement('td');
+                    var listItem3 = document.createElement('td');
+                    var listItem4 = document.createElement('td');
+                    var listItem5 = document.createElement('td');
+
+                    var listItem6 = document.createElement('td');
+                    listItem6.id = listData[i].symbol;
+                    // listItem6.bgColor = 'green';
+
+                    var listItem7 = document.createElement('td');
+                    listItem7.id = listData[i].name;
+
+                    var listItem8 = document.createElement('td');
+                    listItem8.id = listData[i].cmc_rank;
+
+                    // add the images and the html you want before and after
+                    listItem.innerHTML =
+                        '<td>' + listData[i].cmc_rank + '<td/>';
+                    listItem1.innerHTML = '<td>' + listData[i].name + '<td/>';
+                    listItem2.innerHTML = '<td>' + listData[i].symbol + '<td/>';
+                    listItem3.innerHTML =
+                        '<td>' + listData[i].circulating_supply + '<td/>';
+                    listItem4.innerHTML =
+                        '<td>' + listData[i].max_supply + '<td/>';
+                    listItem5.innerHTML =
+                        '<td>' + listData[i].total_supply + '<td/>';
+                    listItem6.innerHTML =
+                        '<td>' +
+                        listData[i].quote.USD.percent_change_1h +
+                        '<td/>';
+                    if (listItem6.innerText.startsWith('-')) {
+                        listItem6.bgColor = 'red';
+                    } else {
+                        listItem6.bgColor = 'green';
+                    }
+
+                    listItem7.innerHTML =
+                        '<td>' +
+                        listData[i].quote.USD.percent_change_24h +
+                        '<td/>';
+
+                    if (listItem7.innerText.startsWith('-')) {
+                        listItem7.bgColor = 'red';
+                    } else {
+                        listItem7.bgColor = 'green';
+                    }
+                    listItem8.innerHTML =
+                        '<td>' +
+                        listData[i].quote.USD.volume_change_24h +
+                        '<td/>';
+
+                    if (listItem8.innerText.startsWith('-')) {
+                        listItem8.bgColor = 'red';
+                    } else {
+                        listItem8.bgColor = 'green';
+                    }
+
+                    // add listItem to the listElement
+                    listContainer.appendChild(listRow);
+
+                    listRow.appendChild(listItem);
+                    listRow.appendChild(listItem1);
+                    listRow.appendChild(listItem2);
+                    listRow.appendChild(listItem3);
+                    listRow.appendChild(listItem4);
+                    listRow.appendChild(listItem5);
+                    listRow.appendChild(listItem6);
+                    listRow.appendChild(listItem7);
+                    listRow.appendChild(listItem8);
+                }
+            }
+        </script>
+    </body>
+</html>
